@@ -1,8 +1,10 @@
 # NATS JetStream Cluster Testing
 
 ## Cluster management
-* Start: `make start`
-* Stop: `make stop`
+* Start new/recreate containers: `make up`
+* Start any stopped containers: `make start`
+* Stop but keep containers: `make stop`
+* Stop and remove containers: `make down`
 * Logs: `make logs`
 * List containers: `make ps`
 * Kill random NATS node: `make kill`

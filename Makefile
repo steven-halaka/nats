@@ -1,4 +1,4 @@
-.PHONY: .venv test.py test.go
+.PHONY: .venv test.py test.go longtest.py longtest.go
 
 .DEFAULT_GOAL := help
 
@@ -9,14 +9,14 @@ help:  ## Show this help
 up:  ## Start all containers
 	@docker compose up --remove-orphans -V -d
 
-.PHONY: start
-start: up  ## Start all containers but don't recreate
+start: ## Start all containers but don't recreate
+	@docker compose start
 
 down: ## Stop and remove all containers
 	@docker compose down
 
-.PHONY: stop
-stop: down  ## Stop but keep all containers
+stop:  ## Stop but keep all containers
+	@docker compose stop
 
 destroy:  ## Stop all containers and remove named volumes
 	@docker compose down -v
@@ -64,3 +64,10 @@ test.py: .venv  ## Run sample nats.py
 
 test.go:  ## Run sample nats.go
 	@go run test.go
+
+longtest.py: .venv  ## Run persistent subscriber nats.py sample
+	@. .venv/bin/activate && python3 longtest.py
+	@true
+
+longtest.go:  ## Run persistent subscriber nats.go sample
+	@go run longtest.go
