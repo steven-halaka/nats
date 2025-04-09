@@ -3,7 +3,8 @@
 .DEFAULT_GOAL := help
 
 help:  ## Show this help
-	@grep -E '^([a-zA-Z_.-]+):.*## ' $(MAKEFILE_LIST) | sort | awk -F ':.*## ' '{printf "%-20s %s\n", $$1, $$2}'
+	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | sort \
+			| awk -F ':.*?## ' 'NF==2 {printf "  %-20s%s\n", $$1, $$2}'
 
 up:  ## Start all containers
 	@docker compose up --remove-orphans -V -d

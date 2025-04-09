@@ -6,7 +6,8 @@ from nats.js.client import Msg
 async def main():
     nc = await nats.connect("nats://a:a@localhost:4222")
     print(f"Connected to {nc.connected_url}")
-    print(f"Connect urls: {nc._server_info['connect_urls']}") 
+    servers = [s.netloc for s in nc.servers]
+    print(f"Connect urls: {servers}") 
     js = nc.jetstream()
 
     stream = await js.add_stream(name="tk",
