@@ -17,7 +17,6 @@ async def main():
             num_replicas=3
         ),
     )
-    print(stream.state)
 
     # Subscribe
     async def message_handler(msg: Msg):
@@ -36,6 +35,7 @@ async def main():
         await js.publish("foo", f"Message {i + 1}".encode())
 
     await asyncio.sleep(1)
+    print(stream.state)
     await nc.drain()
 
 if __name__ == "__main__":

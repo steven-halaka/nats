@@ -6,6 +6,7 @@
 * Logs: `make logs`
 * List containers: `make ps`
 * Kill random NATS node: `make kill`
+* Explicitly kill JetStream leader node: `make kill_leader`
 * Stop and fully cleanup JetStream data volumes: `make destroy`
 
 ## Get info
@@ -13,8 +14,10 @@
 
 `make account_info`
 
-## Run nats.py test client
-`make test`
+## Run nats test clients
+`make test.py`
+
+`make test.go`
 
 ## Example
 ```shell
@@ -23,7 +26,7 @@ $ make up
 ...
 
 # Run test
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.2:4222', '172.22.0.3:4222', '172.22.0.4:4222']
 StreamState(messages=0, bytes=0, first_seq=0, last_seq=0, consumer_count=0, deleted=None, num_deleted=None, lost=None, subjects=None)
@@ -32,7 +35,7 @@ Received a message on foo: Message 2
 Received a message on foo: Message 3
 
 # Run again, notice number of messages in stream
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.3:4222', '172.22.0.2:4222', '172.22.0.4:4222']
 StreamState(messages=3, bytes=126, first_seq=1, last_seq=3, consumer_count=1, deleted=None, num_deleted=None, lost=None, subjects=None)
@@ -52,7 +55,7 @@ $ make kill
 nats-nats2-1
 
 # Test again, note we lost a node reporting back in the server's INFO message
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.3:4222', '172.22.0.2:4222']
 StreamState(messages=6, bytes=252, first_seq=1, last_seq=6, consumer_count=1, deleted=None, num_deleted=None, lost=None, subjects=None)
@@ -74,7 +77,7 @@ $ make kill
 nats-nats3-1
 
 # Can no longer use JetStream
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.2:4222']
 Traceback (most recent call last):
@@ -86,7 +89,7 @@ $ make start
 ...
 
 # Test again; messages retained
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.4:4222', '172.22.0.2:4222', '172.22.0.5:4222']
 StreamState(messages=12, bytes=504, first_seq=1, last_seq=12, consumer_count=1, deleted=None, num_deleted=None, lost=None, subjects=None)
@@ -98,14 +101,14 @@ Received a message on foo: Message 3
 $ make kill_leader 
 nats-nats2-1
 
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.5:4222', '172.22.0.3:4222']
 StreamState(messages=24, bytes=1008, first_seq=1, last_seq=24, consumer_count=1, deleted=None, num_deleted=None, lost=None, subjects=None)
 Received a message on foo: Message 1
 Received a message on foo: Message 2
 Received a message on foo: Message 3
-$ make test
+$ make test.py
 Connected to ParseResult(scheme='nats', netloc='a:a@localhost:4222', path='', params='', query='', fragment='')
 Connect urls: ['172.22.0.3:4222', '172.22.0.5:4222']
 StreamState(messages=27, bytes=1134, first_seq=1, last_seq=27, consumer_count=1, deleted=None, num_deleted=None, lost=None, subjects=None)

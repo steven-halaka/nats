@@ -1,9 +1,9 @@
-.PHONY: .venv
+.PHONY: .venv test.py test.go
 
 .DEFAULT_GOAL := help
 
 help:  ## Show this help
-	@grep -E '^([a-zA-Z_-]+):.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "%-20s %s\n", $$1, $$2}'
+	@grep -E '^([a-zA-Z_.-]+):.*## ' $(MAKEFILE_LIST) | sort | awk -F ':.*## ' '{printf "%-20s %s\n", $$1, $$2}'
 
 up:  ## Start all containers
 	@docker compose up --remove-orphans -V -d
@@ -57,6 +57,9 @@ js_status:  ## Get JetStream status
 	@test -d .venv || python3 -m venv .venv
 	@. .venv/bin/activate && pip install -qr requirements.txt
 
-test: .venv  ## Run sample nats.py
+test.py: .venv  ## Run sample nats.py
 	@. .venv/bin/activate && python3 test.py
 	@true
+
+test.go:  ## Run sample nats.go
+	@go run test.go
