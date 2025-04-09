@@ -1,0 +1,112 @@
+name: nats
+
+services:
+  traefik:
+    image: traefik:v3
+    pull_policy: always
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      - "--ping=true"
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.4222.address=:4222"
+      - "--entrypoints.8222.address=:8222"
+    healthcheck:
+      test: traefik healthcheck --ping
+      interval: 10s
+      timeout: 1s
+      start_interval: 1s
+      start_period: 20s
+
+  nats1: &nats-svc
+    image: nats:alpine
+    pull_policy: always
+    ports:
+      - "4222"
+      - "8222"
+    configs:
+      - source: nats.conf
+        target: /nats.conf
+        mode: "0400"
+    security_opt:
+      - "no-new-privileges:true"
+    healthcheck:
+      test: wget http://localhost:8222/healthz -q -S -O -
+      interval: 10s
+      timeout: 1s
+      start_interval: 1s
+      start_period: 20s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.4222.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.4222.entrypoints=4222"
+      - "traefik.tcp.routers.4222.service=4222"
+      - "traefik.tcp.services.4222.loadbalancer.server.port=4222"
+      - "traefik.tcp.routers.8222.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.8222.entrypoints=8222"
+      - "traefik.tcp.routers.8222.service=8222"
+      - "traefik.tcp.services.8222.loadbalancer.server.port=8222"
+    command: --name=nats1 --config=/nats.conf
+    volumes:
+      - nats_vol1:/data
+  nats2:
+    <<: *nats-svc
+    volumes:
+      - nats_vol2:/data
+    command: --name=nats2 --config=/nats.conf
+  nats3:
+    <<: *nats-svc
+    volumes:
+      - nats_vol2:/data
+    command: --name=nats3 --config=/nats.conf
+
+volumes:
+  nats_vol1:
+  nats_vol2:
+  nats_vol3:
+
+configs:
+  nats.conf:
+    content: |
+      listen: 0.0.0.0:4222
+      http: 0.0.0.0:8222
+      #trace: true
+      #trace_verbose: true
+      #debug: true
+      jetstream {
+        store_dir: /data
+      }
+      #tls {
+      #  cert_file: ""
+      #  key_file: ""
+      #  ca_file: ""
+      #  handshake_first: auto
+      #}
+      accounts {
+        TK {
+          jetstream: enabled
+          users = [
+            {user: a, password: a}
+          ]
+        }
+      }
+      cluster {
+        name: nats-cluster1
+        listen: 0.0.0.0:6222
+        authorization {
+          user: r
+          password r
+        }
+        routes: [
+          nats://r:r@nats1:6222
+          nats://r:r@nats2:6222
+          nats://r:r@nats3:6222
+        ]
+      }
+
